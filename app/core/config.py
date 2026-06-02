@@ -4,6 +4,7 @@ class Settings(BaseSettings):
     app_name: str
     app_version: str
     debug: bool
+    environment: str
 
     host: str
     port: int
