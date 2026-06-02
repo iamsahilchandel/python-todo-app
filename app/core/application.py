@@ -2,9 +2,13 @@ from fastapi import FastAPI
 
 from app.core.config import settings
 from app.core.constants import API_V1_PREFIX
+from app.core.exception_handlers import register_exception_handlers
 from app.core.lifespan import lifespan
 from app.api.router import router as api_router
 
+from app.core.middleware import (
+    register_middlewares
+)
 
 
 
@@ -22,6 +26,9 @@ def create_app() -> FastAPI:
         redoc_url="/redoc",
     )
 
-    app.include_router(api_router, prefix=API_V1_PREFIX)
+    register_middlewares(app)
+    register_exception_handlers(app)
 
+    app.include_router(api_router, prefix=API_V1_PREFIX)
+    
     return app
