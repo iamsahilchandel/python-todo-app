@@ -1,11 +1,17 @@
-from pydantic_core import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
-    APP_NAME: str
-    APP_VERSION: str
-    DEBUG: bool
+    app_name: str
+    app_version: str
+    debug: bool
 
-    class Config:
-        env_file = ".env"
+    host: str
+    port: int
+
+    model_config = SettingsConfigDict(
+        env_file=".env", 
+        env_file_encoding="utf-8",
+        extra="ignore",
+    )
 
 settings = Settings()

@@ -2,13 +2,13 @@ from fastapi import FastAPI
 from app.core.config import settings
 
 app = FastAPI(
-    title=settings.APP_NAME,
-    version=settings.APP_VERSION,
+    title=settings.app_name,
+    version=settings.app_version,
 )
 
 @app.get("/")
 async def read_root():
-    return {"message": f"Welcome to {settings.APP_NAME}!"}
+    return {"message": f"Welcome to {settings.app_name}!"}
 
 @app.get("/health")
 async def health_check():
