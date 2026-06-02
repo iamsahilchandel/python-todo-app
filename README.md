@@ -38,6 +38,10 @@ python-backend-fastapi/
 │   │           └── health.py       # Health check route (GET /health)
 │   └── schemas/
 │       └── health.py               # Health check response schema
+├── run.py                          # Local dev entrypoint (reads host/port from settings)
+├── Makefile                        # Developer workflow shortcuts
+├── Dockerfile                      # Multi-stage production image
+├── docker-compose.yml              # Container orchestration
 ├── .env                            # Local environment variables (not committed)
 ├── .env.example                    # Example env file
 ├── requirements.txt                # Python dependencies
@@ -51,64 +55,70 @@ python-backend-fastapi/
 ### Prerequisites
 
 - Python 3.11+
+- `make` (Windows: via [Git Bash](https://git-scm.com/) or [Chocolatey](https://chocolatey.org/) `choco install make`)
 
-### 1. Clone the repo
+### Quick start (recommended)
 
 ```bash
 git clone <repo-url>
 cd python-backend-fastapi
+
+make setup   # creates .venv, installs deps, copies .env.example → .env
+make dev     # starts the server with hot-reload
 ```
 
-### 2. Create a virtual environment
+The API will be available at `http://localhost:8000`.
+
+### All Makefile commands
+
+| Command | Description |
+|---|---|
+| `make setup` | Create `.venv`, install dependencies, copy `.env` |
+| `make dev` | Run with hot-reload (development) |
+| `make run` | Run without hot-reload (production-like) |
+| `make lint` | Run flake8 |
+| `make test` | Run pytest |
+| `make clean` | Remove `.venv` and `__pycache__` |
+| `make docker-up` | Build image and start via docker-compose |
+| `make docker-down` | Stop docker-compose services |
+| `make docker-logs` | Tail docker-compose logs |
+
+### Manual setup (without make)
 
 ```bash
 python -m venv .venv
-```
-
-Activate it:
-
-- **Windows (PowerShell):**
-  ```powershell
-  .venv\Scripts\Activate.ps1
-  ```
-- **macOS / Linux:**
-  ```bash
-  source .venv/bin/activate
-  ```
-
-### 3. Install dependencies
-
-```bash
+source .venv/bin/activate   # Windows: .venv\Scripts\Activate.ps1
 pip install -r requirements.txt
-```
-
-### 4. Set up environment variables
-
-Copy the example env file and fill in your values:
-
-```bash
 cp .env.example .env
+python run.py               # or: python run.py --reload
 ```
 
-Minimum `.env` contents:
+### Environment variables
+
+`.env` is auto-created from `.env.example` by `make setup`. Minimum contents:
 
 ```env
 APP_NAME=todo-api
 APP_VERSION=0.1.0
 DEBUG=true
 ENVIRONMENT=development
-
 HOST=0.0.0.0
 PORT=8000
 ```
 
-### 5. Run the app
+`run.py` reads `HOST`, `PORT`, and `DEBUG` from this file. When `DEBUG=true`, hot-reload is enabled automatically.
+
+---
+
+## Docker
 
 ```bash
-uvicorn app.main:app --reload
+make docker-up    # builds and starts the container in the background
+make docker-logs  # stream logs
+make docker-down  # stop
 ```
 
-The API will be available at `http://localhost:8000`.
+The container exposes port `8000` (configurable via `PORT` in `.env`).
 
 ---
 
