@@ -10,20 +10,29 @@ PYTHON := $(VENV)/bin/python
 PIP    := $(VENV)/bin/pip
 endif
 
-.PHONY: help venv install setup dev run lint test clean docker-build docker-up docker-down docker-logs
+.PHONY: help venv install setup dev run lint test clean docker-build docker-up docker-down docker-logs db-upgrade db-downgrade db-generate db-history db-current db-clean db-seed
 
 help:
 	@echo "Usage:"
-	@echo "  make setup         Create venv and install requirements"
-	@echo "  make dev           Run app with hot-reload (development)"
-	@echo "  make run           Run app (production)"
-	@echo "  make lint          Run flake8 (if installed)"
-	@echo "  make test          Run pytest (if installed)"
-	@echo "  make clean         Remove virtualenv and caches"
-	@echo "  make docker-build  Build Docker image"
-	@echo "  make docker-up     Build and start with docker-compose"
-	@echo "  make docker-down   Stop docker-compose services"
-	@echo "  make docker-logs   Tail docker-compose logs"
+	@echo "  make setup              Create venv and install requirements"
+	@echo "  make dev                Run app with hot-reload (development)"
+	@echo "  make run                Run app (production)"
+	@echo "  make lint               Run flake8 (if installed)"
+	@echo "  make test               Run pytest (if installed)"
+	@echo "  make clean              Remove virtualenv and caches"
+	@echo ""
+	@echo "  make db-upgrade         Apply all pending migrations"
+	@echo "  make db-downgrade       Roll back the last migration"
+	@echo "  make db-generate m=msg  Generate a new migration (requires m=<message>)"
+	@echo "  make db-history         Show migration history"
+	@echo "  make db-current         Show current migration version"
+	@echo "  make db-clean           Roll back all migrations (downgrade to base)"
+	@echo "  make db-seed            Run database seed script (scripts/seed.py)"
+	@echo ""
+	@echo "  make docker-build       Build Docker image"
+	@echo "  make docker-up          Build and start with docker-compose"
+	@echo "  make docker-down        Stop docker-compose services"
+	@echo "  make docker-logs        Tail docker-compose logs"
 
 venv:
 	@if [ -d "$(VENV)" ]; then \
@@ -59,6 +68,28 @@ clean:
 	@echo "Cleaning virtualenv and caches..."
 	@rm -rf $(VENV) build dist *.egg-info 2>/dev/null || true
 	@find . -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
+
+db-upgrade: venv
+	@$(PYTHON) -m alembic upgrade head
+
+db-downgrade: venv
+	@$(PYTHON) -m alembic downgrade -1
+
+db-generate: venv
+	@$(PYTHON) -m alembic revision --autogenerate -m "$(m)"
+
+db-history: venv
+	@$(PYTHON) -m alembic history
+
+db-current: venv
+	@$(PYTHON) -m alembic current
+
+db-clean: venv
+	@$(PYTHON) scripts/clean.py
+	@$(MAKE) db-seed
+
+db-seed: venv
+	@$(PYTHON) scripts/seed.py
 
 docker-build:
 	docker compose build

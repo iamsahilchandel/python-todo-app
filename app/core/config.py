@@ -10,6 +10,7 @@ class Settings(BaseSettings):
     port: int
 
     database_url: str
+    sync_database_url: str
 
     model_config = SettingsConfigDict(
         env_file=".env", 
